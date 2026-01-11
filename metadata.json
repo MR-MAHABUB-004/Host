@@ -1,0 +1,8 @@
+{
+  "name": "Copy of NexusNode - Bot Hosting Panel",
+  "description": "A high-performance bot hosting dashboard for managing isolated Docker containers with real-time console streaming and file management.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
