@@ -5,13 +5,12 @@ import { Dashboard } from './components/Dashboard';
 import { ServerView } from './components/ServerView';
 import { AdminPanel } from './components/AdminPanel';
 import { Login } from './components/Login';
-import { BotServer, ViewType, ServerStatus, FileEntry, User } from './types';
+import { BotServer, ViewType, ServerStatus, User } from './types';
 
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = '@mahabub#45';
 const HOST_IP = '157.173.120.35';
 
-// Helper to generate a random port
 const generateRandomPort = () => Math.floor(Math.random() * (65535 - 1024 + 1)) + 1024;
 
 const createInitialServer = (): BotServer => {
@@ -39,36 +38,40 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('DASHBOARD');
   const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
   
-  // Manage authorized users state with User objects
   const [authorizedUsers, setAuthorizedUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem('nexus_authorized_users_v2');
+    const saved = localStorage.getItem('nexus_authorized_users_v4');
     const defaultAdmin: User = { username: ADMIN_USERNAME, passwordHash: ADMIN_PASSWORD };
     
     if (saved) {
-      const parsed: User[] = JSON.parse(saved);
-      // Ensure admin is always included with correct credentials
-      const adminExists = parsed.some(u => u.username === ADMIN_USERNAME);
-      if (!adminExists) return [defaultAdmin, ...parsed];
-      
-      // Update admin password if it's different (enforce hardcoded credentials)
-      return parsed.map(u => u.username === ADMIN_USERNAME ? defaultAdmin : u);
+      try {
+        const parsed: User[] = JSON.parse(saved);
+        const hasAdmin = parsed.some(u => u.username.toLowerCase() === ADMIN_USERNAME);
+        if (!hasAdmin) return [defaultAdmin, ...parsed];
+        return parsed.map(u => u.username.toLowerCase() === ADMIN_USERNAME ? defaultAdmin : u);
+      } catch (e) {
+        return [defaultAdmin];
+      }
     }
     return [defaultAdmin];
   });
 
   const [servers, setServers] = useState<BotServer[]>(() => {
-    const saved = localStorage.getItem('nexus_servers_v8');
-    return saved ? JSON.parse(saved) : [createInitialServer()];
+    const saved = localStorage.getItem('nexus_servers_v9');
+    try {
+      return saved ? JSON.parse(saved) : [createInitialServer()];
+    } catch (e) {
+      return [createInitialServer()];
+    }
   });
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('nexus_servers_v8', JSON.stringify(servers));
+    localStorage.setItem('nexus_servers_v9', JSON.stringify(servers));
   }, [servers]);
 
   useEffect(() => {
-    localStorage.setItem('nexus_authorized_users_v2', JSON.stringify(authorizedUsers));
+    localStorage.setItem('nexus_authorized_users_v4', JSON.stringify(authorizedUsers));
   }, [authorizedUsers]);
 
   const selectedServer = useMemo(() => {
@@ -76,8 +79,9 @@ const App: React.FC = () => {
   }, [servers, selectedServerId]);
 
   const handleLogin = (username: string) => {
-    setUser(username);
-    localStorage.setItem('nexus_user', username);
+    const normalized = username.toLowerCase();
+    setUser(normalized);
+    localStorage.setItem('nexus_user', normalized);
   };
 
   const handleLogout = () => {
@@ -93,6 +97,41 @@ const App: React.FC = () => {
     setIsSidebarOpen(false);
   };
 
+  const handleCreateServer = (name: string) => {
+    // Highly unique ID using timestamp and random string
+    const id = `srv-${Date.now().toString().slice(-4)}-${Math.floor(1000 + Math.random() * 8999)}`;
+    const port = generateRandomPort();
+    const ownerId = (user || ADMIN_USERNAME).toLowerCase();
+    
+    const newServer: BotServer = {
+      id,
+      name: name || `Node ${id}`,
+      owner: ownerId,
+      status: ServerStatus.STOPPED,
+      limits: { cpu: 1, ram: 1024, disk: 10 },
+      usage: { cpu: 0, ram: 0, disk: 0.01 },
+      startupCommand: 'npm start',
+      mainFile: 'index.js',
+      port: port,
+      liveUrl: `http://${HOST_IP}:${port}`,
+      files: [
+        { 
+          name: 'index.js', 
+          path: '/index.js', 
+          type: 'file', 
+          lastModified: new Date().toLocaleDateString(), 
+          content: `// Node Initialized: ${new Date().toISOString()}\nconsole.log("NexusNode Instance ${id} is active.");` 
+        }
+      ]
+    };
+
+    // Update state synchronously for reliable navigation
+    setServers(prev => [...prev, newServer]);
+    setSelectedServerId(id);
+    setCurrentView('CONSOLE');
+    setIsSidebarOpen(false);
+  };
+
   const handleDeleteServer = (id: string) => {
     setServers(prev => prev.filter(s => s.id !== id));
     setSelectedServerId(null);
@@ -101,8 +140,10 @@ const App: React.FC = () => {
 
   if (!user) return <Login onLogin={handleLogin} authorizedUsers={authorizedUsers} />;
 
-  const isAdmin = user === ADMIN_USERNAME;
-  const visibleServers = isAdmin ? servers : servers.filter(s => s.owner === user);
+  const isAdmin = user.toLowerCase() === ADMIN_USERNAME;
+  const visibleServers = isAdmin 
+    ? servers 
+    : servers.filter(s => s.owner.toLowerCase() === user.toLowerCase());
 
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-black text-white selection:bg-indigo-500/40">
@@ -139,7 +180,7 @@ const App: React.FC = () => {
             <div className="flex items-center gap-1.5 md:gap-2 text-sm md:text-base font-bold truncate">
                <span className="text-neutral-500 font-medium">Nexus</span>
                <span className="text-neutral-800">/</span>
-               <span className="truncate uppercase tracking-tight text-neutral-100">{selectedServer ? selectedServer.name : currentView}</span>
+               <span className="truncate uppercase tracking-tight text-neutral-100">{selectedServer ? selectedServer.name : (currentView === 'DASHBOARD' ? 'Nodes' : currentView)}</span>
             </div>
           </div>
           <button onClick={handleLogout} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center hover:bg-neutral-800 transition-colors">
@@ -152,7 +193,7 @@ const App: React.FC = () => {
             <Dashboard 
               servers={visibleServers} 
               onSelectServer={navigateToServer} 
-              onCreateServer={() => {}} 
+              onCreateServer={handleCreateServer} 
               currentUser={user}
             />
           )}
