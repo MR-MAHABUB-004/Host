@@ -26,7 +26,7 @@ const INITIAL_SERVERS: BotServer[] = [
     usage: { cpu: 0.15, ram: 124, disk: 1.2 },
     startupCommand: 'node index.js',
     mainFile: 'index.js',
-    port: 3001,
+    port: 2581,
     liveUrl: `http://${MOCK_DOMAIN}:3001`,
     files: [...DEFAULT_FILES]
   },
@@ -39,7 +39,7 @@ const INITIAL_SERVERS: BotServer[] = [
     usage: { cpu: 0, ram: 0, disk: 4.5 },
     startupCommand: 'python3 main.py',
     mainFile: 'main.py',
-    port: 3002,
+    port: 2582,
     liveUrl: `http://${MOCK_DOMAIN}:3002`,
     files: [
       { name: 'main.py', path: '/main.py', type: 'file', size: 800, lastModified: '2023-11-21 08:00', content: 'print("Python bot ready.")' }
