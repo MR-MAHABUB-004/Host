@@ -16,6 +16,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ servers, setServers, aut
   const [newUsername, setNewUsername] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState('');
 
   const toggleSuspend = (id: string) => {
     setServers(prev => prev.map(s => {
@@ -32,27 +33,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ servers, setServers, aut
 
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
-    const user = newUsername.trim();
-    const pass = newUserPassword;
+    const user = newUsername.trim().toLowerCase();
+    const pass = newUserPassword.trim();
     
     if (user && pass) {
-      if (authorizedUsers.some(u => u.username === user)) {
+      if (authorizedUsers.some(u => u.username.toLowerCase() === user)) {
         alert("User already exists.");
         return;
       }
       setAuthorizedUsers(prev => [...prev, { username: user, passwordHash: pass }]);
       setNewUsername('');
       setNewUserPassword('');
+      setSuccessMsg(`User ${user} created successfully!`);
+      setTimeout(() => setSuccessMsg(''), 3000);
     }
   };
 
   const handleRemoveUser = (username: string) => {
-    if (username === PRIMARY_ADMIN_USER) {
+    if (username.toLowerCase() === PRIMARY_ADMIN_USER) {
       alert("Error: Primary admin access cannot be revoked.");
       return;
     }
     if (confirm(`Revoke access for ${username}?`)) {
-      setAuthorizedUsers(prev => prev.filter(u => u.username !== username));
+      setAuthorizedUsers(prev => prev.filter(u => u.username.toLowerCase() !== username.toLowerCase()));
     }
   };
 
@@ -160,6 +163,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ servers, setServers, aut
                   required
                 />
               </div>
+              
+              {successMsg && (
+                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest text-center py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
+                  {successMsg}
+                </p>
+              )}
+
               <button 
                 type="submit"
                 className="w-full py-4 mt-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 active:scale-95 transition-all"
@@ -178,8 +188,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ servers, setServers, aut
                 {authorizedUsers.map(user => (
                   <div key={user.username} className="flex items-center justify-between p-6 group hover:bg-white/[0.01] transition-colors">
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${user.username === PRIMARY_ADMIN_USER ? 'bg-amber-500/10 text-amber-500' : 'bg-neutral-900 text-neutral-500'}`}>
-                        {user.username === PRIMARY_ADMIN_USER ? (
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${user.username.toLowerCase() === PRIMARY_ADMIN_USER ? 'bg-amber-500/10 text-amber-500' : 'bg-neutral-900 text-neutral-500'}`}>
+                        {user.username.toLowerCase() === PRIMARY_ADMIN_USER ? (
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                         ) : (
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -189,14 +199,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ servers, setServers, aut
                         <span className="text-sm font-bold text-neutral-100">{user.username}</span>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[9px] font-black uppercase tracking-widest text-neutral-600">
-                            {user.username === PRIMARY_ADMIN_USER ? 'System Administrator' : 'Authorized User'}
+                            {user.username.toLowerCase() === PRIMARY_ADMIN_USER ? 'System Administrator' : 'Authorized User'}
                           </span>
                           <span className="text-neutral-800 text-[8px]">•</span>
-                          <span className="text-[9px] font-mono text-neutral-700">Pass: {user.username === PRIMARY_ADMIN_USER ? '********' : user.passwordHash}</span>
+                          <span className="text-[9px] font-mono text-neutral-700">Pass: {user.username.toLowerCase() === PRIMARY_ADMIN_USER ? '********' : user.passwordHash}</span>
                         </div>
                       </div>
                     </div>
-                    {user.username !== PRIMARY_ADMIN_USER && (
+                    {user.username.toLowerCase() !== PRIMARY_ADMIN_USER && (
                       <button 
                         onClick={() => handleRemoveUser(user.username)}
                         className="p-3 text-rose-500/40 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all active:scale-90"

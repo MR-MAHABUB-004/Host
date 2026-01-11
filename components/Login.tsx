@@ -16,15 +16,18 @@ export const Login: React.FC<LoginProps> = ({ onLogin, authorizedUsers }) => {
     e.preventDefault();
     setError('');
 
+    const normalizedUsername = username.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
     const targetUser = authorizedUsers.find(u => 
-      u.username === username.trim() && 
-      u.passwordHash === password
+      u.username.toLowerCase() === normalizedUsername && 
+      u.passwordHash === cleanPassword
     );
 
     if (targetUser) {
       onLogin(targetUser.username);
     } else {
-      setError('Invalid username or password. Access restricted to authorized personnel.');
+      setError('Invalid username or password. Access restricted.');
     }
   };
 
@@ -41,9 +44,9 @@ export const Login: React.FC<LoginProps> = ({ onLogin, authorizedUsers }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">NexusNode || Mahabub Rahman</h1>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">NexusNode</h1>
           <p className="text-slate-400 text-sm italic font-mono uppercase tracking-widest text-[10px]">
-            Enterprise Hosting service..
+            Enterprise Hosting Gateway
           </p>
         </div>
 
@@ -101,7 +104,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, authorizedUsers }) => {
             type="submit"
             className="w-full flex justify-center py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/20 text-xs font-black text-white bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 uppercase tracking-[0.2em]"
           >
-            ENTER
+            Authorize Connection
           </button>
         </form>
 

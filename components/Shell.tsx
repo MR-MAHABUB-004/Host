@@ -14,7 +14,6 @@ export const Shell: React.FC<ShellProps> = ({ server }) => {
 
   useEffect(() => {
     setHistory([
-      { text: `DEVELOPER: MAHABUB RAHMAN`, type: 'info' },
       { text: `NexusNode Interactive Terminal [Version 3.2.1-stable]`, type: 'info' },
       { text: `Welcome to the isolated container environment for: ${server.name}`, type: 'info' },
       { text: `(c) 2024 NexusNode Cloud. All rights reserved.`, type: 'info' },
