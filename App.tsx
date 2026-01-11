@@ -8,7 +8,7 @@ import { Login } from './components/Login';
 import { BotServer, ViewType, ServerStatus, FileEntry } from './types';
 
 const ADMIN_EMAIL = 'xyzmahabub22@gmail.com';
-const MOCK_DOMAIN = 'nexus-node.io';
+const MOCK_DOMAIN = 'http://157.173.120.35';
 
 const DEFAULT_FILES: FileEntry[] = [
   { name: 'index.js', path: '/index.js', type: 'file', size: 1024, lastModified: '2023-11-20 11:30', content: 'console.log("NexusNode Instance Running...");' },
