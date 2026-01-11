@@ -21,6 +21,11 @@ export interface FileEntry {
   content?: string;
 }
 
+export interface User {
+  username: string;
+  passwordHash: string; // Storing as "passwordHash" for terminology, though it will be plain text in this mock
+}
+
 export interface BotServer {
   id: string;
   name: string;
@@ -32,7 +37,7 @@ export interface BotServer {
   mainFile: string;
   port: number;
   liveUrl: string;
-  files: FileEntry[]; // Added for persistence
+  files: FileEntry[];
 }
 
 export type ViewType = 'DASHBOARD' | 'CONSOLE' | 'SHELL' | 'FILE_MANAGER' | 'SETTINGS' | 'ADMIN';
